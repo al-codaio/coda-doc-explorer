@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
+import logo from './img/mark-lockup.png';
 import './App.css';
+import Header from './Header'
 
 function UsernameForm() {
   const [username, setUsername] = React.useState('')
@@ -30,26 +31,91 @@ function UsernameForm() {
   )
 }
 
+function UserInfo({userApiKey}) {
+  const [status, setStatus] = React.useState('idle')
+  const [userinfo, setUserInfo] = React.useState(null)
+  const [error, setError] = React.useState(null)
+
+  React.useEffect(() => {
+    if (!userApiKey) {
+      return
+    }
+    setStatus('pending')
+    fetchUserData(userApiKey).then(
+      userData => {
+        setStatus('resolved')
+        setUserInfo(userData)
+      },
+      errorData => {
+        setStatus('rejected')
+        setError(errorData)
+      },
+    )
+  }, [userApiKey])
+
+  if (status === 'idle') {
+    return 'Enter an API key'
+  }
+
+  if (status === 'rejected') {
+    return 'Oh no...'
+  }
+
+  if (status === 'pending') {
+    return 'Loading...'
+  }
+
+  if (status === 'resolved') {
+    return <pre>{JSON.stringify(userinfo, null, 2)}</pre>
+  }
+}
+
 function App() {
+  const [key, setKey] = React.useState('')
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    setKey(event.target.elements.userKey.value)
+    event.target.reset()
+
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />         
+
       <UsernameForm />
+
+      {/* Need to move the below into the UsernameForm component */}
+      <div>
+        <form onSubmit={handleSubmit}>
+          <p>DO NOT SHARE YOUR KEY WITH ANYONE</p>
+          <label htmlFor="userKey">Your Coda API Key</label>
+          <div>
+            <input id="userKey" />
+            <button type="submit">Submit</button>
+          </div>
+        </form>
+        <hr />
+        <UserInfo userApiKey={key} />
+      </div>
+
+      
+
     </div>
   );
+}
+
+function fetchUserData(key) {
+  return window
+    .fetch('https://coda.io/apis/v1/docs', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + key,
+      }
+    })
+    .then(r => r.json())
+    .then(response => response.items[0])
 }
 
 export default App;
