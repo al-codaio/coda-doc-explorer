@@ -2,38 +2,14 @@ import React, { useState } from 'react';
 import logo from './img/mark-lockup.png';
 import './App.css';
 import Header from './Header'
-
-function UsernameForm() {
-  const [username, setUsername] = React.useState('')
-  const isLowerCase = username === username.toLowerCase()
-  const error = isLowerCase ? null : 'Username must be lower case'
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    alert(`You entered: ${username}`)
-  }
-
-  function handleChange(event) {
-    setUsername(event.target.value)
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="usernameInput">Username:</label>
-        <input id="usernameInput" type="text" onChange={handleChange} />
-      </div>
-      <div style={{color: 'red'}}>{error}</div>
-      <button disabled={Boolean(error)} type="submit">
-        Submit
-      </button>
-    </form>
-  )
-}
+import Container from 'react-bootstrap/Container';
+import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 function UserInfo({userApiKey}) {
   const [status, setStatus] = React.useState('idle')
-  const [userinfo, setUserInfo] = React.useState(null)
+  const [userinfo, setUserInfo] = React.useState([])
   const [error, setError] = React.useState(null)
 
   React.useEffect(() => {
@@ -66,8 +42,30 @@ function UserInfo({userApiKey}) {
   }
 
   if (status === 'resolved') {
-    return <pre>{JSON.stringify(userinfo, null, 2)}</pre>
+    return (
+      <div>
+        <ListDocs userInfo={userinfo} />
+        <hr />
+        <pre>{JSON.stringify(userinfo, null, 2)}</pre>
+      </div>
+    )
   }
+}
+
+function ListDocs({userInfo}) {
+  return (
+    <Container fluid>
+    <Row>
+      <Col style={{border: "1px solid black"}} md="auto">Variable width contentVariable width contentVariable width contentVariable width content</Col>
+      <Col style={{border: "1px solid black"}} md="auto">
+        2 of 2
+      </Col>
+    </Row>
+      <div>
+        <ul>{userInfo.map((item, index) => (<li key={index}>{item['name']}</li>))}</ul>
+      </div>
+    </Container>
+  )
 }
 
 function App() {
@@ -77,14 +75,11 @@ function App() {
     event.preventDefault()
     setKey(event.target.elements.userKey.value)
     event.target.reset()
-
   }
 
   return (
     <div className="App">
       <Header />         
-
-      <UsernameForm />
 
       {/* Need to move the below into the UsernameForm component */}
       <div>
@@ -96,11 +91,8 @@ function App() {
             <button type="submit">Submit</button>
           </div>
         </form>
-        <hr />
         <UserInfo userApiKey={key} />
-      </div>
-
-      
+      </div>    
 
     </div>
   );
@@ -115,7 +107,7 @@ function fetchUserData(key) {
       }
     })
     .then(r => r.json())
-    .then(response => response.items[0])
+    .then(response => response.items.slice(0,4))
 }
 
 export default App;
