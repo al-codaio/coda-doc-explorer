@@ -5,7 +5,7 @@ export default class Header extends Component {
   render() {
     return(
       <header className="App-header">
-        <a href="https://www.coda.io/" target="_blank"><img src={logo} className="App-logo" alt="coda-logo" /></a>
+        <a href="https://www.coda.io/" target="_blank" rel="noopener noreferrer"><img src={logo} className="App-logo" alt="coda-logo" /></a>
         <h1>
           Coda Doc Explorer
         </h1>

@@ -6,6 +6,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { SortArray } from './helpers/Helpers';
 
 function UserInfo({userApiKey}) {
   const [status, setStatus] = React.useState('idle')
@@ -44,6 +45,7 @@ function UserInfo({userApiKey}) {
   if (status === 'resolved') {
     return (
       <div>
+        <br/>
         <ListDocs userInfo={userinfo} />
         <hr />
         <pre>{JSON.stringify(userinfo, null, 2)}</pre>
@@ -53,17 +55,27 @@ function UserInfo({userApiKey}) {
 }
 
 function ListDocs({userInfo}) {
+  userInfo.sort(SortArray('docSize', 'desc', 'tableAndViewCount'))
+  
+  console.log(userInfo)
   return (
     <Container fluid>
-    <Row>
-      <Col style={{border: "1px solid black"}} md="auto">Variable width contentVariable width contentVariable width contentVariable width content</Col>
-      <Col style={{border: "1px solid black"}} md="auto">
-        2 of 2
-      </Col>
-    </Row>
-      <div>
-        <ul>{userInfo.map((item, index) => (<li key={index}>{item['name']}</li>))}</ul>
-      </div>
+      <Row>
+        <Col style={{border: "1px solid black"}}>Docs</Col>
+        <Col style={{border: "1px solid black"}}>Tables</Col>
+        <Col style={{border: "1px solid black"}}>Rows</Col>
+      </Row>
+      
+      <Row>
+        <Col style={{border: "1px solid black"}}>
+          <div>
+            <ul>{userInfo.map((item, index) => (<li key={index}>{item['name']}</li>))}</ul>
+          </div>
+        </Col>
+        <Col style={{border: "1px solid black"}}>Tables</Col>
+        <Col style={{border: "1px solid black"}}>Rows</Col>
+      </Row>
+
     </Container>
   )
 }
@@ -82,7 +94,7 @@ function App() {
       <Header />         
 
       {/* Need to move the below into the UsernameForm component */}
-      <div>
+      <div> 
         <form onSubmit={handleSubmit}>
           <p>DO NOT SHARE YOUR KEY WITH ANYONE</p>
           <label htmlFor="userKey">Your Coda API Key</label>
