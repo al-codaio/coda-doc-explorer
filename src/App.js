@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from './img/mark-lockup.png';
 import './App.css';
 import Header from './Header'
@@ -7,6 +7,7 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { SortArray } from './helpers/Helpers';
+import dateFormat from 'dateformat';
 
 function UserInfo({userApiKey}) {
   const [status, setStatus] = React.useState('idle')
@@ -35,7 +36,7 @@ function UserInfo({userApiKey}) {
   }
 
   if (status === 'rejected') {
-    return 'Oh no...'
+    return 'Invalid key'
   }
 
   if (status === 'pending') {
@@ -55,21 +56,78 @@ function UserInfo({userApiKey}) {
 }
 
 function ListDocs({userInfo}) {
-  userInfo.sort(SortArray('docSize', 'desc', 'tableAndViewCount'))
+  const [sortType, setSortType] = useState('updatedAt');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [docSizeFlag, setDocSizeFlag] = useState(0);
+  // const [sortedUserInfo, setSortedUserInfo] = useState(userInfo);
+  // console.log(userInfo)
+  // console.log(sortOrder)
+
+  const toggleSort = (buttonSort) => {
+    switch(buttonSort) {
+      case "name":
+        setSortType('name');
+        break;
+      case "rows":
+        setSortType('docSize');
+        setDocSizeFlag('totalRowCount');
+        break;
+      case "tables":
+        setSortType('docSize');
+        setDocSizeFlag('tableAndViewCount');
+        break;
+      case "lastUpdate":
+        setSortType('updatedAt');
+        break;
+      default:
+        setSortType('updatedAt');
+        setDocSizeFlag(0)
+    }
+    if (sortOrder === 'asc') {setSortOrder('desc')}
+    else {setSortOrder('asc')}
+  } 
   
-  console.log(userInfo)
+  useEffect(() => {
+    userInfo.sort(SortArray(sortType, sortOrder, docSizeFlag))
+    
+    // const sortedArray = [...userInfo].sort(SortArray('name', sortType))
+    // setSortedUserInfo(sortedArray)
+  }, [sortType, sortOrder])
+
   return (
     <Container fluid>
       <Row>
-        <Col style={{border: "1px solid black"}}>Docs</Col>
+        <Col style={{border: "1px solid black"}}>
+          Docs
+          <Row>
+            <Col style={{border: "1px solid black"}}>
+              Name
+              <Button variant="outline-warning" onClick={() => toggleSort('name')}>Sort</Button>
+            </Col>
+            <Col style={{border: "1px solid black"}}>
+              Rows
+              <Button variant="outline-primary" onClick={() => toggleSort('rows')}>Sort</Button>
+            </Col>
+            <Col style={{border: "1px solid black"}}>
+              Tables
+              <Button variant="outline-success" onClick={() => toggleSort('tables')}>Sort</Button>{' '}
+            </Col>
+            <Col style={{border: "1px solid black"}}>
+              Last Updated
+              <Button variant="outline-secondary" onClick={() => toggleSort('lastUpdate')}>Sort</Button>{' '}
+            </Col>
+          </Row>
+        </Col>
         <Col style={{border: "1px solid black"}}>Tables</Col>
         <Col style={{border: "1px solid black"}}>Rows</Col>
       </Row>
       
+      
+
       <Row>
         <Col style={{border: "1px solid black"}}>
           <div>
-            <ul>{userInfo.map((item, index) => (<li key={index}>{item['name']}</li>))}</ul>
+            <ul>{userInfo.map((item, index) => (<li key={index}>{item['name'] + ', ' + item['docSize']['totalRowCount'] + ', ' + item['docSize']['tableAndViewCount']+ ', ' + dateFormat(item['updatedAt'], "mm/dd/yy")}</li>))}</ul>
           </div>
         </Col>
         <Col style={{border: "1px solid black"}}>Tables</Col>
